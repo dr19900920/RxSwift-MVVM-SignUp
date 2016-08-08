@@ -10,22 +10,6 @@ import UIKit
 import RxAlamofire
 import RxSwift
 
-enum SignUpValidationResult {
-    case OK(message: String)
-    case Empty
-    case Validating
-    case Failed(message: String)
-}
-extension SignUpValidationResult {
-    var isValide: Bool {
-        switch self {
-        case .OK:
-            return true
-        default:
-            return false
-        }
-    }
-}
 
 //  网络请求，相当于对后台的调试接口
 protocol SignUpAPI {
@@ -36,6 +20,6 @@ protocol SignUpAPI {
 
 //  正则校验，相当于对用户输入内容的限制
 protocol SignUpValidationService {
-    func validatePhone(phone: String) -> Observable<SignUpValidationResult>
-    func validateCode(code: String) -> Observable<SignUpValidationResult>
+    func validatePhone(phone: String) -> Observable<Bool>
+    func validateCode(code: String) -> Observable<Bool>
 }

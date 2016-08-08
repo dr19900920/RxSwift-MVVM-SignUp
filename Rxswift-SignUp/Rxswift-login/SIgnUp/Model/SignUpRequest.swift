@@ -11,43 +11,8 @@ import RxSwift
 import RxAlamofire
 import Alamofire
 
-let kRegEx_phone = "^(0|86|17951)?(13[0-9]|15[012356789]|17[0-9]|18[0-9]|14[57])[0-9]{8}$"
+let disposeBag = DisposeBag()
 
-struct RegexHelper {
-    let regex: NSRegularExpression
-    
-    init(_ pattern: String) throws {
-        try regex = NSRegularExpression(pattern: pattern,
-            options: .CaseInsensitive)
-    }
-    
-    func match(input: String) -> Bool {
-        let matches = regex.matchesInString(input,
-            options: [],
-            range: NSMakeRange(0, input.characters.count))
-        return matches.count > 0
-    }
-}
-
-infix operator =~ {
-associativity none
-precedence 130
-}
-
-func =~(lhs: String, rhs: String) -> Bool {
-    do {
-        return try RegexHelper(rhs).match(lhs)
-    } catch _ {
-        return false
-    }
-}
-
-var disposeBag = DisposeBag()
-
-enum YRPError: ErrorType {
-    case NoError
-    case HaveError
-}
 private func baseURL(urlString: String) -> String {
     return "这里放主urlstring\(urlString)"
 }
@@ -96,13 +61,13 @@ class signUpValidationService: SignUpValidationService {
     static let shareService = signUpValidationService(api: signUpRequest())
     
     let number = 11
-    func validatePhone(phone: String) -> Observable<SignUpValidationResult> {
+    func validatePhone(phone: String) -> Observable<Bool> {
         if phone.characters.count < 11  {
-            return Observable.just(.Empty)
+            return Observable.just(false)
         }
         else if (phone =~ kRegEx_phone) == false {
             print("请输入正确的手机号")
-            return Observable.just(SignUpValidationResult.Failed(message: "phone error"))
+            return Observable.just(false)
         }
         else {
             
@@ -112,20 +77,21 @@ class signUpValidationService: SignUpValidationService {
             .map{available in
                 if available {
                     print("手机号可注册")
-                    return SignUpValidationResult.OK(message: "phone ok")
+                    return true
                 }
                 else {
                     print("手机号已存在")
-                    return SignUpValidationResult.Failed(message: "手机号已存在")
+                    return false
                 }
             }
-            .startWith(SignUpValidationResult.Validating)
+            /// 让信号最开始为false
+            .startWith(false)
     }
-    func validateCode(code: String) -> Observable<SignUpValidationResult> {
+    func validateCode(code: String) -> Observable<Bool> {
         if code.characters.count != 4 {
-            return Observable.just(.Empty)
+            return Observable.just(false)
         }
-        return Observable.just(.OK(message: "ok"))
+        return Observable.just(true)
         
     }
 
